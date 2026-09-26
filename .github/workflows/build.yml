@@ -4,7 +4,7 @@
 # GitHub release (the pack attached), develop keeps the rolling `nightly` pre-release current (the way every
 # other autobleem2 component does), and a v* tag or a manual dispatch with publish on also pushes
 # samples-<date>.tar.gz + .json to the download site's samples/ (the self-hosted runner - the site is its
-# disk; a separate job, kept alongside the release/nightly ones for now). Gated by AB_CI_ENABLED.
+# disk; a separate job alongside the release/nightly ones - the owner wants the pack on the site, Q13). Gated by AB_CI_ENABLED.
 name: build
 
 on:
