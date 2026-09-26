@@ -1,0 +1,108 @@
+# autobleem-samples CI: the sample-games pack from tools/samples/samples.json with tools/build_samples.py -
+# every game's files from its upstream release, each checked against the manifest's sha256 - on every push
+# and PR (so a moved or changed upstream file is caught here, not by an installer). A v* tag publishes a
+# GitHub release (the pack attached), develop keeps the rolling `nightly` pre-release current (the way every
+# other autobleem2 component does), and a v* tag or a manual dispatch with publish on also pushes
+# samples-<date>.tar.gz + .json to the download site's samples/ (the self-hosted runner - the site is its
+# disk; a separate job alongside the release/nightly ones - the owner wants the pack on the site, Q13). Gated by AB_CI_ENABLED.
+name: build
+
+on:
+  push:
+    branches: [develop, master]
+    tags: ['v*']
+  pull_request:
+    branches: [develop, master]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: publish the pack to the download site
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: vars.AB_CI_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "AB_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else echo "AB_VERSION=0.0.0-$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"; fi
+          grep '^AB_VERSION=' "$GITHUB_ENV" | tail -1 | sed 's/^AB_VERSION=/version=/' >> "$GITHUB_OUTPUT"
+      - name: Build the pack
+        run: |
+          set -euo pipefail
+          python3 tools/build_samples.py --out build_samples --cache .samples-cache
+          ls -l build_samples
+          tar -tzf build_samples/samples-*.tar.gz | head -40
+      - uses: actions/upload-artifact@v7
+        with:
+          name: samples
+          path: build_samples/samples-*
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions: { contents: write }
+    steps:
+      - uses: actions/download-artifact@v8
+        with: { name: samples, path: out }
+      - name: Attach to the release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+            --title "Samples ${GITHUB_REF_NAME}" --generate-notes out/samples-*.tar.gz out/samples-*.json || \
+          gh release upload "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" out/samples-*.tar.gz out/samples-*.json --clobber
+
+  nightly:
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions: { contents: write }
+    steps:
+      - uses: actions/download-artifact@v8
+        with: { name: samples, path: out }
+      - uses: autobleem2/autobleem-build/.github/actions/nightly-release@develop
+        with:
+          files: out/samples-*.tar.gz
+          version: ${{ needs.build.outputs.version }}
+
+  publish:
+    if: >-
+      vars.AB_CI_ENABLED == 'true' &&
+      (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish))
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    env:
+      AB_REPO_DIR: /home/claude/autobleem-repo
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: autobleem2/autobleem-repo
+          path: autobleem-repo-tools
+      - uses: actions/download-artifact@v8
+        with:
+          name: samples
+          path: build_samples
+      - name: Publish samples/ to the site
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD:$PWD" -w "$PWD" -v "$AB_REPO_DIR:$AB_REPO_DIR" -e REPO_DIR="$AB_REPO_DIR" \
+            ghcr.io/autobleem2/autobleem-build:latest \
+            bash autobleem-repo-tools/tools/repo_publish.sh --local samples build_samples/samples-*.tar.gz build_samples/samples-*.json
