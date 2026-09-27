@@ -87,7 +87,7 @@ jobs:
       vars.AB_CI_ENABLED == 'true' &&
       (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish))
     needs: build
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, psc-build]
     env:
       AB_REPO_DIR: /home/claude/autobleem-repo
     steps:
