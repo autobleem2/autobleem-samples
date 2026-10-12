@@ -9,7 +9,7 @@ not contain any game file itself.
 
 The pack is fetched by the launcher's `payload_linux/install.sh` from the download site's
 `samples/latest.json` (`--no-samples` skips it) and staged by autobleem-appliance into its package; see
-`CLAUDE.md` (those two live in other repositories and are not checked here). This repository has no tests
+`CLAUDE.md` ("Consumers"). This repository has no tests
 of its own: the CI build itself is the check, because it fails when an upstream file moved or changed.
 
 ## Games today
