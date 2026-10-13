@@ -24,8 +24,9 @@ sha256-checks it against the manifest, and stages it exactly as it will sit on a
 docstring for the tree inside the pack (`Games/<title>/`, `RetroArch/roms/<system>/`,
 `RetroArch/thumbnails/<db>/Named_Boxarts/`, `SAMPLES.md`) and the two conventions it writes into a PS1
 game's `Game.ini` (`Automation=0`, locked, so the scanner keeps the title/publisher/year/players written
-here) and `pcsx.cfg` (`SlowBoot = 0` when the manifest's `skip_boot_logo` says the game's own boot logo
-does not get past pcsx-ab's BIOS shell).
+here) and, only when the manifest's `skip_boot_logo` says the game's own boot logo does not get past the
+emulator's BIOS shell, `pcsx.cfg` (`SlowBoot = 0`). The PS1 sample is Tetrade; it targets pcsx-abnxt (pcsx-ab
+is no longer developed) and does not need `skip_boot_logo` there.
 
 ## Adding or updating a sample
 

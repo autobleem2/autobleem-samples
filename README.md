@@ -16,13 +16,14 @@ of its own: the CI build itself is the check, because it fails when an upstream 
 
 | Game | System | Licence |
 |---|---|---|
+| Tetrade | PS1 | MIT |
 | Nova the Squirrel | NES | GPL-3.0 |
 | Asteroids | SNES | MIT |
 | Castle Platformer | SNES | MIT |
 | Alex vs Bus - The Race | Mega Drive | GPL-3.0 (code), CC BY-SA 4.0 (assets) |
 
-There is no PS1 game at the moment (the manifest's `_comment` says why); the PS1 code path in
-`build_samples.py` is kept for the next one. Each game keeps its own licence, linked from its manifest
+Tetrade (PS1, built with PSn00bSDK) runs on the pcsx-abnxt emulator; it was out of the pack from
+2026-09-20 until then because it did not run on its predecessor. Each game keeps its own licence, linked from its manifest
 entry and reproduced in the pack's `SAMPLES.md`. `LICENSE` (GPL-3.0-or-later) covers the tooling only.
 
 ## Layout
@@ -36,8 +37,6 @@ tools/samples/make_covers.py  draws a cover from the screenshot (needs Pillow)
 .github/workflows/build.yml   CI
 ```
 
-`covers/tetrade.png` and `shots/tetrade_title.png` belong to the removed PS1 game and are not used.
-
 ## Building
 
 ```
@@ -47,9 +46,10 @@ python3 tools/build_samples.py [--out DIR] [--cache DIR] [--date YYYYMMDD]
 Standard library only. Each file is downloaded from its upstream URL and checked against the entry's
 sha256 (a mismatch aborts). The result is `<out>/samples-<date>.tar.gz` and `<out>/samples-<date>.json`
 (the site page and `install.sh` read the json). The tarball holds `RetroArch/roms/<db name>/`,
-`RetroArch/thumbnails/<db name>/Named_Boxarts/` and `SAMPLES.md`; PS1 games would go in `Games/<title>/`.
-The PS1 path reads `src/resources/pcsx.cfg` and `make_covers.py` reads a font from `payload/Themes/`;
-neither exists in this repository, so both need fixing before a PS1 game is added.
+`RetroArch/thumbnails/<db name>/Named_Boxarts/` and `SAMPLES.md`; PS1 games go in `Games/<title>/`.
+A PS1 entry gets a `pcsx.cfg` only with `skip_boot_logo`, which reads `src/resources/pcsx.cfg`; that file
+does not exist in this repository, so no entry uses it today. `make_covers.py` reads a font from
+`payload/Themes/`, also absent, so it cannot be re-run here; the covers are checked in.
 
 ## Publishing
 

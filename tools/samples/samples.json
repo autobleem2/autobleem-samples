@@ -4,12 +4,44 @@
     "redistribute it (every entry names it), one per system at least. tools/build_samples.py downloads each file",
     "from its upstream release (sha256-checked), lays it out as it lands on the data partition and packs",
     "samples-<date>.tar.gz for the download repository (samples/); payload_linux/install.sh fetches that.",
+    "The PS1 game gets a locked Game.ini (Automation=0) so the scanner keeps the metadata and the cover written",
+    "here; a pcsx.cfg is written only for an entry with 'skip_boot_logo' (SlowBoot = 0, for a disc whose custom",
+    "boot logo breaks the emulator's BIOS shell) - Tetrade runs on pcsx-abnxt without it, so it has none and the",
+    "launcher's default applies. The ROMs are named as the launcher's ROM scan labels them (the file's stem) with a box art of the",
     "same name in the thumbnails tree. Covers: tools/samples/make_covers.py -> covers/ (checked in).",
     "'shot' is the screenshot make_covers.py draws from (a file under tools/samples/shots/, from the game's own",
     "repository, under the game's licence).",
-    "No PS1 game today: Tetrade (MIT, PSn00bSDK) was the one until 2026-09-20 - it does not run on pcsx-ab (see CLAUDE.md), and no other PS1 homebrew with a redistributable licence and a disc image turned up. The PSX layout code in build_samples.py stays for when one does."
+    "PS1: Tetrade (MIT, PSn00bSDK) was out from 2026-09-20 because it did not run on pcsx-ab; it runs on pcsx-abnxt, the emulator the PS1 sample targets, and is back."
   ],
   "games": [
+    {
+      "id": "tetrade",
+      "system": "psx",
+      "title": "Tetrade",
+      "author": "Logan Campbell",
+      "year": 2025,
+      "players": 2,
+      "publisher": "Logan Campbell",
+      "licence": "MIT",
+      "licence_url": "https://github.com/Logan-Campbell/Tetrade/blob/master/LICENSE",
+      "source": "https://github.com/Logan-Campbell/Tetrade",
+      "description": "A Tetris-style puzzle game with marathon and two-player modes, built with PSn00bSDK.",
+      "files": [
+        {
+          "url": "https://github.com/Logan-Campbell/Tetrade/releases/download/v1.0/TETRADE_PSX.bin",
+          "sha256": "2f41feba2023cbdcd9c1c3d4cfc3d8d1a7f1a2de0afea2e7a050b84640d6eaf8",
+          "name": "Tetrade.bin"
+        },
+        {
+          "url": "https://github.com/Logan-Campbell/Tetrade/releases/download/v1.0/TETRADE_PSX.cue",
+          "sha256": "98cb45d15241900c8459176e833be5edee78120763ac4d91d79d24020b10d67a",
+          "name": "Tetrade.cue",
+          "rewrite_cue": true
+        }
+      ],
+      "cover": "tetrade.png",
+      "shot": "tetrade_title.png"
+    },
     {
       "id": "nova",
       "system": "nes",
